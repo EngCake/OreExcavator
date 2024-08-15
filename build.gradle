@@ -7,7 +7,7 @@ plugins {
 
 project.ext.modID = "engcake.excavator" // The unique id of your mod. Must be all lowercase and cannot use special characters.
 project.ext.modName = "Ore Excavator" // The display name of your mod.
-project.ext.modVersion = "0.1.0" // Your current builds version. Must follow the xx.xx... format.
+project.ext.modVersion = "0.2.0" // Your current builds version. Must follow the xx.xx... format.
 project.ext.gameVersion = "0.26.0" // The target game version.
 project.ext.modDescription = "Quickly mine vein of ore with one click!" // Short description of what your mod is.
 project.ext.author = "EngCake" // Your name
