@@ -1,6 +1,5 @@
 package engcake.excavator.patches;
 
-import engcake.excavator.OreExcavator;
 import necesse.engine.modLoader.annotations.ModMethodPatch;
 import necesse.engine.network.server.ServerClient;
 import necesse.entity.DamagedObjectEntity;

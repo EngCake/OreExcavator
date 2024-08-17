@@ -2,7 +2,6 @@ package engcake.excavator.settings;
 
 import necesse.engine.modLoader.annotations.ModConstructorPatch;
 import necesse.engine.network.client.Client;
-import necesse.gfx.forms.Form;
 import necesse.gfx.forms.presets.SettingsForm;
 import net.bytebuddy.asm.Advice;
 
@@ -12,11 +11,9 @@ import net.bytebuddy.asm.Advice;
                 Client.class,
         }
 )
-public class OreExcavatorSettingsFormPatch {
-        private static Form 
-
+public class SettingsFormPatch {
         @Advice.OnMethodExit
-        public static void OnConstructorExit(Client client) {
-
+        public static void OnConstructorExit(@Advice.This SettingsForm self) {
+                OreExcavatorSettingsForm.addForm(self);
         }
 }

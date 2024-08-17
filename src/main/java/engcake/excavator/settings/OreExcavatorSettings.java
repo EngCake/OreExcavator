@@ -1,11 +1,11 @@
-package engcake.excavator;
+package engcake.excavator.settings;
 
 import necesse.engine.modLoader.ModSettings;
 import necesse.engine.save.LoadData;
 import necesse.engine.save.SaveData;
 
 public class OreExcavatorSettings extends ModSettings {
-    private boolean test;
+    public boolean test;
 
     @Override
     public void addSaveData(SaveData saveData) {
