@@ -1,11 +1,10 @@
 package engcake.excavator.patches;
 
-import engcake.excavator.OreExcavator;
 import necesse.engine.modLoader.annotations.ModMethodPatch;
 import necesse.engine.network.server.ServerClient;
 import necesse.entity.DamagedObjectEntity;
-import necesse.entity.TileDamageResult;
-import necesse.entity.TileDamageType;
+import necesse.entity.ObjectDamageResult;
+import necesse.entity.mobs.Attacker;
 import necesse.level.gameObject.GameObject;
 import necesse.level.maps.Level;
 import necesse.level.maps.LevelObject;
@@ -13,11 +12,12 @@ import net.bytebuddy.asm.Advice;
 
 @ModMethodPatch(
         target = DamagedObjectEntity.class,
-        name = "doDamage",
+        name = "doObjectDamage",
         arguments = {
                 int.class,
-                TileDamageType.class,
                 int.class,
+                int.class,
+                Attacker.class,
                 ServerClient.class,
                 boolean.class,
                 int.class,
@@ -28,14 +28,15 @@ public class DoDamagePatch {
     @Advice.OnMethodExit
     static void onExit(
             @Advice.This DamagedObjectEntity self,
-            @Advice.Argument(0) int damage,
-            @Advice.Argument(1) TileDamageType type,
+            @Advice.Argument(0) int objectLayerID,
+            @Advice.Argument(1) int damage,
             @Advice.Argument(2) int toolTier,
-            @Advice.Argument(3) ServerClient client,
-            @Advice.Argument(4) boolean showEffects,
-            @Advice.Argument(5) int mouseX,
-            @Advice.Argument(6) int mouseY,
-            @Advice.Return(readOnly = true)TileDamageResult result
+            @Advice.Argument(3) Attacker attacker,
+            @Advice.Argument(4) ServerClient client,
+            @Advice.Argument(5) boolean showEffects,
+            @Advice.Argument(6) int mouseX,
+            @Advice.Argument(7) int mouseY,
+            @Advice.Return(readOnly = true) ObjectDamageResult result
             ) {
         if (client == null) {
             return;
@@ -43,7 +44,7 @@ public class DoDamagePatch {
 
         Level level = client.getLevel();
 
-        if (type != TileDamageType.Object || result == null || !result.destroyed) {
+        if (result == null || !result.destroyed) {
             return;
         }
 
@@ -63,12 +64,13 @@ public class DoDamagePatch {
                 continue;
             }
 
-            level.entityManager.doDamage(
+            level.entityManager.doObjectDamage(
+                    objectLayerID,
                     levelObject.tileX,
                     levelObject.tileY,
                     levelObject.object.objectHealth,
-                    type,
                     toolTier,
+                    attacker,
                     client,
                     showEffects,
                     mouseX,
