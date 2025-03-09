@@ -16,7 +16,7 @@ import net.bytebuddy.asm.Advice;
         arguments = {
                 int.class,
                 int.class,
-                int.class,
+                float.class,
                 Attacker.class,
                 ServerClient.class,
                 boolean.class,
@@ -30,13 +30,13 @@ public class DoDamagePatch {
             @Advice.This DamagedObjectEntity self,
             @Advice.Argument(0) int objectLayerID,
             @Advice.Argument(1) int damage,
-            @Advice.Argument(2) int toolTier,
+            @Advice.Argument(2) float toolTier,
             @Advice.Argument(3) Attacker attacker,
             @Advice.Argument(4) ServerClient client,
             @Advice.Argument(5) boolean showEffects,
             @Advice.Argument(6) int mouseX,
             @Advice.Argument(7) int mouseY,
-            @Advice.Return(readOnly = true) ObjectDamageResult result
+            @Advice.Return ObjectDamageResult result
             ) {
         if (client == null) {
             return;
@@ -48,7 +48,7 @@ public class DoDamagePatch {
             return;
         }
 
-        if (!shouldPropagate(result.levelObject.object)) {
+        if (gameObjectIsNotOre(result.levelObject.object)) {
             return;
         }
 
@@ -60,7 +60,7 @@ public class DoDamagePatch {
             int currentTileX = levelObject.tileX;
             int currentTileY = levelObject.tileY;
 
-            if (!shouldPropagate(levelObject.object) || (currentTileX != tileX && currentTileY != tileY)) {
+            if (gameObjectIsNotOre(levelObject.object) || (currentTileX != tileX && currentTileY != tileY)) {
                 continue;
             }
 
@@ -79,7 +79,7 @@ public class DoDamagePatch {
         }
     }
 
-    public static boolean shouldPropagate(GameObject gameObject) {
-        return gameObject.isOre;
+    public static boolean gameObjectIsNotOre(GameObject gameObject) {
+        return !gameObject.isOre;
     }
 }
