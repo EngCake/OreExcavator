@@ -7,8 +7,8 @@ plugins {
 
 project.ext.modID = "engcake.excavator" // The unique id of your mod. Must be all lowercase and cannot use special characters.
 project.ext.modName = "Ore Excavator" // The display name of your mod.
-project.ext.modVersion = "0.2.1" // Your current builds version. Must follow the xx.xx... format.
-project.ext.gameVersion = "0.28.1" // The target game version.
+project.ext.modVersion = "0.2.2" // Your current builds version. Must follow the xx.xx... format.
+project.ext.gameVersion = "0.31.1" // The target game version.
 project.ext.modDescription = "Quickly mine vein of ore with one click!" // Short description of what your mod is.
 project.ext.author = "EngCake" // Your name
 
@@ -52,7 +52,7 @@ configurations {
 }
 
 sourceSets.main.output.resourcesDir = file("build/mod/resources/")
-sourceSets.main.java.outputDir = file("build/mod/")
+sourceSets.main.java.destinationDirectory = file("build/mod/")
 sourceSets.main.compileClasspath += configurations.libDepends // Adds libDepends configuration to classpath
 def buildLocation = "build/jar/"
 
@@ -88,8 +88,8 @@ task createModInfoFile(type: JavaExec) {
 
     classpath = files(gameDirectory + "/Necesse.jar")
 
-    main = "CreateModInfoFile"
-    args "-file", "${sourceSets.main.java.outputDir}/mod.info",
+    mainClass = "CreateModInfoFile"
+    args "-file", "${sourceSets.main.java.destinationDirectory.get().toString()}/mod.info",
             "-id", "${project.ext.modID}",
             "-name", "${project.ext.modName}",
             "-version", "${project.ext.modVersion}",
@@ -132,7 +132,7 @@ task runServer(type: JavaExec) {
 
     classpath = files(gameDirectory + "/Server.jar")
 
-    main = "StartServer"
+    mainClass = "StartServer"
     jvmArgs "-Xms512m", "-Xmx4G", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseG1GC", "-XX:G1NewSizePercent=20", "-XX:G1ReservePercent=20", "-XX:MaxGCPauseMillis=50", "-XX:G1HeapRegionSize=32M"
     args "-mod \"${buildLocation}\""
 }
@@ -149,10 +149,10 @@ task buildModJar(type: Jar) {
     }
 
     // Add mod output
-    from sourceSets.main.java.outputDir
+    from sourceSets.main.java.destinationDirectory
     // Add the dependencies
     from configurations.libDepends.collect { it.isDirectory() ? it : zipTree(it) }
 
-    archiveName "${jarName}.jar"
-    destinationDir file(buildLocation)
+    archiveFileName.set("${jarName}.jar")
+    destinationDirectory.set(file(buildLocation))
 }
