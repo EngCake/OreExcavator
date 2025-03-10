@@ -16,7 +16,7 @@ import net.bytebuddy.asm.Advice;
         arguments = {
                 int.class,
                 int.class,
-                int.class,
+                float.class,
                 Attacker.class,
                 ServerClient.class,
                 boolean.class,
@@ -30,56 +30,60 @@ public class DoDamagePatch {
             @Advice.This DamagedObjectEntity self,
             @Advice.Argument(0) int objectLayerID,
             @Advice.Argument(1) int damage,
-            @Advice.Argument(2) int toolTier,
+            @Advice.Argument(2) float toolTier,
             @Advice.Argument(3) Attacker attacker,
             @Advice.Argument(4) ServerClient client,
             @Advice.Argument(5) boolean showEffects,
             @Advice.Argument(6) int mouseX,
             @Advice.Argument(7) int mouseY,
-            @Advice.Return(readOnly = true) ObjectDamageResult result
-            ) {
-        if (client == null) {
+            @Advice.Return ObjectDamageResult result) {
+        if (shouldSkipProcessing(client, result)) {
             return;
         }
 
         Level level = client.getLevel();
-
-        if (result == null || !result.destroyed) {
-            return;
-        }
-
-        if (!shouldPropagate(result.levelObject.object)) {
-            return;
-        }
-
         int tileX = self.getTileX();
         int tileY = self.getTileY();
 
-        LevelObject[] adjacentObjects = level.getAdjacentLevelObjects(tileX, tileY);
-        for (LevelObject levelObject : adjacentObjects) {
-            int currentTileX = levelObject.tileX;
-            int currentTileY = levelObject.tileY;
-
-            if (!shouldPropagate(levelObject.object) || (currentTileX != tileX && currentTileY != tileY)) {
-                continue;
-            }
-
-            level.entityManager.doObjectDamage(
-                    objectLayerID,
-                    levelObject.tileX,
-                    levelObject.tileY,
-                    levelObject.object.objectHealth,
-                    toolTier,
-                    attacker,
-                    client,
-                    showEffects,
-                    mouseX,
-                    mouseY
-            );
+        if (isOre(result.levelObject.object)) {
+            checkAdjacentObjects(level, objectLayerID, tileX, tileY, toolTier, attacker, client, showEffects, mouseX, mouseY);
         }
     }
 
-    public static boolean shouldPropagate(GameObject gameObject) {
+    public static boolean shouldSkipProcessing(ServerClient client, ObjectDamageResult result) {
+        return client == null || result == null || !result.destroyed;
+    }
+
+    public static boolean isOre(GameObject gameObject) {
         return gameObject.isOre;
+    }
+
+    public static void checkAdjacentObjects(Level level, int objectLayerID, int tileX, int tileY, float toolTier, Attacker attacker, ServerClient client, boolean showEffects, int mouseX, int mouseY) {
+        LevelObject[] adjacentObjects = level.getAdjacentLevelObjects(tileX, tileY);
+
+        for (LevelObject levelObject : adjacentObjects) {
+            if (isAdjacentOre(levelObject, tileX, tileY)) {
+                damageAdjacentOre(level, objectLayerID, levelObject, toolTier, attacker, client, showEffects, mouseX, mouseY);
+            }
+        }
+    }
+
+    public static boolean isAdjacentOre(LevelObject levelObject, int tileX, int tileY) {
+        return isOre(levelObject.object) && (levelObject.tileX == tileX || levelObject.tileY == tileY);
+    }
+
+    public static void damageAdjacentOre(Level level, int objectLayerID, LevelObject levelObject, float toolTier, Attacker attacker, ServerClient client, boolean showEffects, int mouseX, int mouseY) {
+        level.entityManager.doObjectDamage(
+                objectLayerID,
+                levelObject.tileX,
+                levelObject.tileY,
+                levelObject.object.objectHealth,
+                toolTier,
+                attacker,
+                client,
+                showEffects,
+                mouseX,
+                mouseY
+        );
     }
 }
