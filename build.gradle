@@ -52,7 +52,7 @@ configurations {
 }
 
 sourceSets.main.output.resourcesDir = file("build/mod/resources/")
-sourceSets.main.java.destinationDirectory = file("build/mod/")
+sourceSets.main.java.outputDir = file("build/mod/")
 sourceSets.main.compileClasspath += configurations.libDepends // Adds libDepends configuration to classpath
 def buildLocation = "build/jar/"
 
@@ -88,8 +88,8 @@ task createModInfoFile(type: JavaExec) {
 
     classpath = files(gameDirectory + "/Necesse.jar")
 
-    mainClass = "CreateModInfoFile"
-    args "-file", "${sourceSets.main.java.destinationDirectory.get().toString()}/mod.info",
+    main = "CreateModInfoFile"
+    args "-file", "${sourceSets.main.java.outputDir}/mod.info",
             "-id", "${project.ext.modID}",
             "-name", "${project.ext.modName}",
             "-version", "${project.ext.modVersion}",
@@ -132,7 +132,7 @@ task runServer(type: JavaExec) {
 
     classpath = files(gameDirectory + "/Server.jar")
 
-    mainClass = "StartServer"
+    main = "StartServer"
     jvmArgs "-Xms512m", "-Xmx4G", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseG1GC", "-XX:G1NewSizePercent=20", "-XX:G1ReservePercent=20", "-XX:MaxGCPauseMillis=50", "-XX:G1HeapRegionSize=32M"
     args "-mod \"${buildLocation}\""
 }
@@ -149,10 +149,10 @@ task buildModJar(type: Jar) {
     }
 
     // Add mod output
-    from sourceSets.main.java.destinationDirectory
+    from sourceSets.main.java.outputDir
     // Add the dependencies
     from configurations.libDepends.collect { it.isDirectory() ? it : zipTree(it) }
 
-    archiveFileName.set("${jarName}.jar")
-    destinationDirectory.set(file(buildLocation))
+    archiveName "${jarName}.jar"
+    destinationDir file(buildLocation)
 }
